@@ -6,17 +6,17 @@
 \vspace{3\baselineskip}
 
 \noindent
-Blood diseases such as malaria, anemia, and leukemia affect millions globally, yet their diagnosis remains dependent on manual microscopy—a time-consuming and expertise-intensive process. This thesis presents a novel hybrid deep learning pipeline that addresses three critical challenges in automated blood disease detection: precise cell localization, accurate classification under data scarcity, and inherent orientation invariance of blood cells.
+Blood disease diagnosis relies on manual microscopy, which is time-consuming and expertise-dependent. This thesis presents a novel hybrid deep learning pipeline addressing three critical challenges: cell localization, classification under data scarcity, and orientation invariance.
 
 \vspace{\baselineskip}
 
 \noindent
-The proposed solution integrates a three-stage architecture. First, a fine-tuned Mask R-CNN performs instance segmentation on raw blood smear images, isolating individual red blood cells (RBCs) and white blood cells (WBCs) while generating a synthetic single-cell labeled dataset. Second, a Reynolds Network (ReyNet)—a novel architecture based on group equivariant theory—classifies RBCs by mathematically encoding rotational symmetry into the network structure, eliminating the need for extensive data augmentation. Concurrently, a fine-tuned ResNet18 classifies WBC subtypes via transfer learning. Third, the pipeline aggregates cell-level predictions to provide disease diagnosis, infection rate quantification, and spatial localization of infected cells.
+The proposed three-stage architecture integrates: (1) Mask R-CNN for instance segmentation, isolating individual cells and generating synthetic single-cell datasets; (2) Reynolds Network (ReyNet) for RBC classification, mathematically encoding rotational symmetry via group equivariant theory to eliminate data augmentation needs, alongside ResNet18 for WBC classification; and (3) aggregation of predictions for disease diagnosis and cell counting.
 
 \vspace{\baselineskip}
 
 \noindent
-This work makes four key contributions: (1) the first application of Reynolds Networks to medical imaging, demonstrating superior rotation invariance and parameter efficiency compared to conventional CNNs; (2) a unified pipeline addressing localization, classification, and counting in a single framework; (3) a data augmentation strategy through segmentation-driven synthetic dataset generation; and (4) comprehensive empirical validation showing that ReyNet achieves comparable accuracy with approximately 25\% fewer parameters while maintaining robust performance across arbitrary image rotations. The system demonstrates clinical viability for automated blood disease screening, particularly in resource-constrained settings where expert pathologists are scarce.
+This work presents the first application of Reynolds Networks to medical imaging, achieving comparable accuracy with 25\% fewer parameters while demonstrating superior rotation invariance. The unified pipeline addresses localization, classification, and counting, offering clinical viability for automated screening in resource-constrained settings.
 
 \vspace{\baselineskip}
 

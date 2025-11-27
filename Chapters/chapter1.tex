@@ -16,6 +16,16 @@ However, applying deep learning to blood cell analysis isn't straightforward. Bl
 
 This work tackles these challenges by combining instance segmentation with symmetry-aware neural network architectures. The goal is to build an automated blood disease detection system that's both mathematically sound and practically useful in clinical settings.
 
+% FIGURE 1.1: Representative blood smear microscopy image
+% Purpose: Show readers the complexity of a typical blood smear with multiple cells
+% What to include: Microscopy image showing dozens of RBCs and WBCs, with some annotations
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Images/ch1_blood_smear_example.png}
+    \caption{Representative blood smear microscopy image showing the complexity of manual diagnosis. A typical field of view contains dozens to hundreds of individual cells (red blood cells and white blood cells) that must be examined individually. Infected cells (if present) are scattered among healthy cells, requiring careful inspection of each cell's morphology.}
+    \label{fig:ch1_blood_smear}
+\end{figure}
+
 
 \section{Problem Statement}
 \label{sec:problem_statement}
@@ -33,18 +43,48 @@ From a biological standpoint, blood cells have no "correct" orientation. A red b
 
 These three challenges are interconnected. An effective solution needs to handle cell-level detection, work well with limited labeled data, and properly account for the rotational symmetry inherent to blood cells.
 
+% FIGURE 1.2: Rotation invariance challenge demonstration
+% Purpose: Visually demonstrate that cells should be classified identically regardless of orientation
+% What to include: Same blood cell shown at multiple rotation angles (0°, 45°, 90°, 135°, 180°)
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Images/ch1_rotation_invariance_demo.png}
+    \caption{The rotation invariance challenge in blood cell classification. The same infected red blood cell is shown at five different rotation angles (0°, 45°, 90°, 135°, 180°). From a biological and clinical perspective, all five images represent identical diagnostic information and should yield the same classification. However, standard CNNs treat each rotation as a distinct input unless explicitly trained with data augmentation, leading to inefficient parameter usage and potential performance degradation at unseen angles.}
+    \label{fig:ch1_rotation_demo}
+\end{figure}
+
 
 \section{Proposed Solution}
 \label{sec:proposed_solution}
 
-We propose a three-stage pipeline that addresses each of the challenges described above. The approach combines instance segmentation, symmetry-aware classification, and prediction aggregation to create a complete blood disease detection system.
+We propose a three-stage pipeline that addresses each of the challenges described above. The approach combines instance segmentation, symmetry-aware classification, and prediction aggregation to create a complete blood disease detection system. Figure~\ref{fig:ch1_pipeline} provides an overview of the complete architecture.
+
+% FIGURE 1.3: Pipeline architecture overview
+% Purpose: Give readers a high-level visual understanding of the three-stage system
+% What to include: Block diagram showing data flow through all three stages with example images
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1.0\textwidth]{Images/ch1_pipeline_architecture.png}
+    \caption{Overview of the proposed three-stage hybrid pipeline for blood disease detection. \textbf{Stage 1 (Segmentation):} Mask R-CNN processes raw blood smear images to detect and segment individual cells, generating bounding boxes and pixel-precise masks. \textbf{Stage 2 (Classification):} Extracted single-cell images are classified using ReyNet for RBCs (which exploits rotational symmetry via Reynolds operators) and ResNet18 for WBCs (via transfer learning). \textbf{Stage 3 (Aggregation):} Cell-level predictions are combined to compute infection rates, generate diagnostic reports, and produce annotated visualizations showing spatial localization of infected cells.}
+    \label{fig:ch1_pipeline}
+\end{figure}
 
 \subsection{Stage 1: Segmentation}
 \label{subsec:stage_segmentation}
 
 The first stage uses Mask R-CNN, a well-established instance segmentation architecture, to break down raw blood smear images into individual cells. We start with a model pre-trained on the COCO dataset and fine-tune it for blood cell detection. For each cell, Mask R-CNN predicts a bounding box, a class label (red blood cell or white blood cell), and a pixel-level segmentation mask.
 
-This segmentation stage tackles both Challenge 1 and Challenge 2. It handles localization by identifying where each cell is in the image. More interestingly, it also addresses the data scarcity problem in a practical way. Instead of needing datasets where every individual cell has been manually annotated, we can train the segmentation model using field-of-view images with simpler annotations. Once trained, this model automatically generates a single-cell dataset by extracting and cropping each detected cell from raw blood smears. Each extracted cell becomes a labeled training example for the next stage, effectively turning sparse annotations into a large collection of single-cell images.
+This segmentation stage tackles both Challenge 1 and Challenge 2. It handles localization by identifying where each cell is in the image. More interestingly, it also addresses the data scarcity problem in a practical way. Instead of needing datasets where every individual cell has been manually annotated, we can train the segmentation model using field-of-view images with simpler annotations. Once trained, this model automatically generates a single-cell dataset by extracting and cropping each detected cell from raw blood smears. Each extracted cell becomes a labeled training example for the next stage, effectively turning sparse annotations into a large collection of single-cell images. This process is illustrated in Figure~\ref{fig:ch1_dataset_generation}.
+
+% FIGURE 1.4: Segmentation-driven dataset generation
+% Purpose: Illustrate how the segmentation stage solves the data scarcity problem
+% What to include: Before/after showing annotated blood smear → extracted individual cell crops
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Images/ch1_dataset_generation.png}
+    \caption{Segmentation-driven synthetic dataset generation. \textbf{Left:} A raw blood smear image with detected cells highlighted by bounding boxes from Mask R-CNN. \textbf{Right:} Individual cells automatically extracted and cropped from the segmentation results, creating a large single-cell dataset. This approach inverts the traditional annotation workflow: instead of manually segmenting thousands of individual cells, we annotate several hundred field-of-view images and programmatically extract tens of thousands of cell-level training examples for downstream classification.}
+    \label{fig:ch1_dataset_generation}
+\end{figure}
 
 \subsection{Stage 2: Classification}
 \label{subsec:stage_classification}

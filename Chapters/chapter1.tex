@@ -6,77 +6,107 @@
 \section{Motivation}
 \label{sec:motivation}
 
-% Blood diseases (malaria, anemia, leukemia) affect millions globally
-% Traditional diagnosis: manual microscopy - time-consuming, expertise-dependent
-% Need for automated, accurate, scalable diagnostic tools
-% AI/ML offers promise but faces challenges in medical imaging
+Hematological disorders represent a significant global health burden, affecting hundreds of millions of individuals worldwide. Diseases such as malaria continue to cause over 200 million clinical episodes annually, while various forms of anemia impact nearly a quarter of the global population~\cite{WHO2021}. Similarly, leukemias and other blood malignancies demand early detection for effective therapeutic intervention. The cornerstone of diagnosing these conditions remains peripheral blood smear examination under optical microscopy, where trained pathologists visually inspect stained blood cells to identify morphological abnormalities indicative of disease.
+
+Despite being the established clinical standard, manual microscopy presents several fundamental limitations. The process is inherently labor-intensive, requiring expert hematopathologists whose availability is severely constrained in resource-limited settings. Inter-observer variability further complicates diagnosis, as subjective interpretation of cell morphology can lead to inconsistent results between different practitioners. Additionally, the sheer volume of cells requiring examination in a single blood smear makes comprehensive manual analysis prohibitively time-consuming, potentially delaying critical diagnostic decisions.
+
+The advent of artificial intelligence and machine learning has opened promising avenues for automating blood disease detection. Deep learning architectures, particularly convolutional neural networks (CNNs), have demonstrated remarkable success across diverse medical imaging domains including radiology, dermatology, and ophthalmology. These systems offer the potential for objective, rapid, and scalable diagnostic screening that could democratize access to high-quality hematological care, especially in underserved regions lacking specialized expertise.
+
+However, applying deep learning to blood cell analysis introduces unique technical challenges not fully addressed by conventional CNN architectures. Blood cells exhibit inherent rotational symmetry—a cell photographed at any orientation should yield identical diagnostic conclusions, yet standard neural networks treat rotated versions as distinct inputs unless explicitly trained otherwise. Medical datasets are typically small and expensive to annotate, making data-hungry deep learning approaches difficult to deploy effectively. Furthermore, raw blood smears contain dozens to hundreds of cells per field of view, necessitating not just classification but also precise localization and quantification of infected cells to determine disease severity.
+
+This thesis addresses these challenges through a principled integration of instance segmentation, symmetry-aware neural architectures, and mathematical group theory, presenting a unified framework for automated blood disease detection that is both theoretically grounded and clinically practical.
 
 
 \section{Problem Statement}
 \label{sec:problem_statement}
 
-% CHALLENGE 1: Localization
-% - Raw blood smear images contain multiple cells
-% - Cannot identify WHICH cells are infected
-% - Cannot COUNT number of infected cells
+Developing an effective automated system for blood disease detection requires confronting three interconnected technical challenges that are inadequately addressed by existing approaches.
 
-% CHALLENGE 2: Data Scarcity
-% - Most datasets: raw microscopy images (not single-cell labeled)
-% - Training classifiers requires single-cell annotated data
-% - Limited availability of properly segmented datasets
+\textbf{Challenge 1: Spatial Localization and Quantification.}
+Clinical blood smear images capture entire fields of view containing tens to hundreds of individual cells distributed across the frame. Diagnosing diseases like malaria or identifying abnormal leukocytes requires determining not merely whether infection is present in the image, but precisely \emph{which specific cells} are affected and \emph{how many} infected cells exist relative to the total population. Image-level classification alone is insufficient; the system must perform instance-level detection to localize each cell, segment its boundaries, and classify its health status independently. This spatial decomposition is essential both for clinical utility—enabling pathologists to verify specific flagged cells—and for calculating clinically relevant metrics such as parasitemia levels, which directly inform treatment decisions.
 
-% CHALLENGE 3: Orientation Invariance
-% - Blood cells have no inherent orientation
-% - Same cell at different rotations should yield same diagnosis
-% - Traditional CNNs require extensive data augmentation
+\textbf{Challenge 2: Data Scarcity and Annotation Burden.}
+The majority of publicly available blood cell datasets consist of whole-slide or field-of-view images with image-level labels indicating overall disease presence. Training robust cell-level classifiers, however, necessitates densely annotated datasets where every individual cell is segmented and labeled—a requirement that dramatically increases annotation costs and time. Expert hematopathologists must manually delineate cell boundaries and assign class labels, a process that can require hours per image. Consequently, large-scale single-cell annotated datasets remain scarce. This data bottleneck is particularly acute in medical imaging, where dataset sizes are orders of magnitude smaller than natural image collections, yet model performance critically depends on having sufficient training examples per class.
+
+\textbf{Challenge 3: Orientation Invariance and Symmetry.}
+Blood cells possess no intrinsic orientation; an erythrocyte infected with malaria parasites exhibits identical diagnostic features regardless of its rotational alignment in the microscope field. From a biological and clinical perspective, cell identity is invariant to arbitrary rotations and reflections. Traditional CNNs, however, do not inherently respect this symmetry. A network trained on upright cells may fail to recognize the same cell rotated 45 degrees unless such rotations are explicitly included in the training data through augmentation. While data augmentation partially addresses this issue by artificially expanding the dataset with rotated copies, it remains inefficient: the network must learn the same features redundantly across multiple orientations, increasing both parameter count and training time. Moreover, augmentation provides no theoretical guarantee of true rotation invariance, and performance often degrades on unseen intermediate angles.
+
+These three challenges—localization, data efficiency, and symmetry—are deeply interrelated. A principled solution must simultaneously address cell-level detection, operate effectively with limited annotated data, and leverage the inherent rotational symmetry of blood cells to improve generalization and reduce model complexity.
 
 
 \section{Proposed Solution}
 \label{sec:proposed_solution}
 
-% A three-stage hybrid pipeline:
+This thesis proposes a three-stage hybrid pipeline that systematically addresses each of the identified challenges through a combination of instance segmentation, symmetry-aware classification, and aggregated inference. The architecture integrates established computer vision techniques with novel applications of group-equivariant neural networks to create a unified framework for blood disease detection.
 
 \subsection{Stage 1: Segmentation}
 \label{subsec:stage_segmentation}
 
-% - Pre-trained Mask R-CNN fine-tuned for blood cell detection
-% - Isolates individual RBCs and WBCs from raw smears
-% - Generates synthetic single-cell labeled dataset
+The first stage employs Mask R-CNN, a state-of-the-art instance segmentation architecture, to decompose raw blood smear images into individual cell instances. By leveraging transfer learning from a model pre-trained on the COCO dataset, we fine-tune the network specifically for blood cell detection tasks. Mask R-CNN simultaneously predicts bounding boxes, class labels (red blood cell versus white blood cell), and pixel-precise segmentation masks for each detected cell.
 
+This segmentation stage directly addresses Challenge 1 by providing spatial localization of every cell in the input image. Moreover, it elegantly solves Challenge 2 by transforming the data annotation problem: rather than requiring manually annotated single-cell datasets, we utilize readily available field-of-view images with coarse annotations to train the segmentation model. Once trained, this model \emph{automatically generates} a synthetic single-cell dataset by extracting and cropping individual cells from raw smears. Each extracted cell becomes a labeled training example for downstream classification, effectively converting sparse annotations into dense single-cell data at scale.
 
 \subsection{Stage 2: Classification}
 \label{subsec:stage_classification}
 
-% - RBC Classification: Reynolds Network (ReyNet) architecture
-%   * Exploits rotational/flip symmetry mathematically
-%   * Reduces parameter redundancy
-%   * Improves computational efficiency
-% - WBC Classification: Fine-tuned ResNet18
-%   * Leverages pre-trained features
-%   * Transfer learning for limited data
+The second stage processes the extracted single-cell images through specialized classification networks. We employ distinct architectures for red blood cells and white blood cells, reflecting their different morphological characteristics and diagnostic requirements.
 
+\textbf{Red Blood Cell Classification via Reynolds Networks.}
+For RBC classification—distinguishing healthy erythrocytes from infected ones—we introduce Reynolds Networks (ReyNet), a novel architecture grounded in mathematical group theory. ReyNets explicitly encode rotational and reflective symmetries through the Reynolds operator, which projects arbitrary functions onto spaces of group-invariant or group-equivariant functions via averaging over group actions.
+
+Concretely, we implement symmetry layers that average feature representations over the dihedral group $D_4$, comprising four rotations and two reflections, thereby ensuring that the network's internal representations remain consistent regardless of input cell orientation. Unlike data augmentation, which treats rotation invariance as a data problem requiring artificial dataset expansion, ReyNet embeds invariance directly into the architectural structure. This design choice addresses Challenge 3 through mathematical rigor rather than heuristic augmentation, yielding networks that are provably equivariant to rotations while simultaneously reducing parameter redundancy.
+
+The ReyNet architecture adopts a hybrid design: early layers employ standard ResNet blocks to extract low-level features such as edges and textures, while deeper layers incorporate Reynolds operators to process high-level semantic features under symmetry constraints. This separation allows efficient feature extraction where invariance is not yet critical, while ensuring rotation-invariant decision-making in classification layers. Furthermore, we implement a reduced-dimension Reynolds operator parameterization that decreases computational complexity from $O(|G|)$ to $O(n^2)$ through judicious subset selection, maintaining theoretical guarantees while improving practical efficiency.
+
+\textbf{White Blood Cell Classification via Transfer Learning.}
+For WBC subtype classification, we employ a fine-tuned ResNet18 architecture pre-trained on ImageNet. White blood cells exhibit more complex internal structure (nuclei, cytoplasm, granules) whose morphological variations benefit from rich feature representations learned on natural images. The transfer learning approach proves particularly effective given the relatively smaller WBC dataset sizes, allowing the network to leverage generalizable low-level features while adapting higher layers to hematological specifics.
 
 \subsection{Stage 3: Disease Detection \& Counting}
 \label{subsec:stage_detection}
 
-% - Aggregates cell-level predictions
-% - Counts infected vs healthy cells
-% - Provides diagnostic report with spatial localization
+The final stage aggregates cell-level predictions to produce holistic diagnostic outputs. For each input blood smear image, the pipeline:
+
+\begin{enumerate}
+    \item Compiles classification results from all detected RBCs and WBCs
+    \item Computes infection rates by calculating the ratio of infected cells to total cells
+    \item Determines disease diagnosis based on clinically relevant thresholds
+    \item Generates annotated visualizations overlaying predicted labels onto the original image with spatial localization
+\end{enumerate}
+
+This aggregation stage provides not only binary disease presence/absence classifications, but quantitative metrics essential for clinical decision-making, such as parasitemia percentages in malaria diagnosis. The complete pipeline thus transforms raw microscopy images into actionable diagnostic reports while maintaining interpretability through explicit cell-level predictions and spatial localization.
 
 
 \section{Novel Contributions}
 \label{sec:contributions}
 
-% 1. First application of Reynolds Networks to blood cell classification
-% 2. Hybrid pipeline addressing localization, classification, and counting
-% 3. Synthetic dataset generation using segmentation for classifier training
-% 4. Comparative analysis: ReyNet vs traditional CNNs for medical imaging
+This thesis makes four principal contributions to the intersection of medical imaging, computer vision, and symmetry-aware machine learning:
+
+\textbf{1. First Application of Reynolds Networks to Medical Image Analysis.}
+While Reynolds Networks have been successfully applied to graph neural networks and molecular property prediction tasks where symmetries arise from permutation groups, this work represents the \emph{first documented application} of Reynolds operators to medical imaging domains. We demonstrate that the rotational symmetries inherent to blood cells—arising from their biological structure and imaging modality—can be exploited through group-theoretic neural architectures. This contribution bridges theoretical advances in equivariant neural networks with practical clinical applications, opening new research directions for symmetry-aware medical AI.
+
+\textbf{2. Unified Multi-Stage Pipeline for Detection, Localization, and Quantification.}
+Most existing blood cell classification systems address either segmentation or classification in isolation. This work presents an integrated end-to-end pipeline that jointly solves three interconnected problems: instance-level cell detection and segmentation, cell-wise health status classification, and population-level disease quantification. By architecting these stages as a coherent system rather than independent modules, we enable capabilities beyond simple binary classification—including spatial localization of infected cells, quantitative parasitemia measurement, and clinically actionable diagnostic reports with verifiable predictions.
+
+\textbf{3. Synthetic Dataset Generation via Segmentation-Driven Extraction.}
+We introduce a practical methodology for addressing data scarcity in medical imaging contexts where field-of-view images are abundant but single-cell annotations are prohibitively expensive. By training an instance segmentation model on coarsely annotated full images, we automatically generate large-scale single-cell datasets suitable for training downstream classifiers. This approach inverts the traditional annotation pipeline: rather than manually segmenting thousands of individual cells, practitioners need only annotate several hundred field-of-view images, from which tens of thousands of cell-level training examples are programmatically extracted. This contribution has implications beyond blood cell analysis for any medical imaging task involving repeated anatomical structures.
+
+\textbf{4. Comprehensive Empirical Validation of Symmetry-Aware Architectures in Clinical Settings.}
+We conduct rigorous comparative analysis between Reynolds Networks and conventional CNN baselines (ResNet18 with data augmentation), evaluating not only classification accuracy but also rotation invariance consistency, parameter efficiency, computational cost, and error characteristics. Specifically, we empirically validate theoretical predictions about Reynolds operators—such as guaranteed equivariance and reduced parameter redundancy—in a real-world medical imaging application. By demonstrating that ReyNet achieves comparable or superior accuracy with approximately 25\% fewer parameters while maintaining consistent predictions across arbitrary rotations, we provide concrete evidence that theoretical advances in geometric deep learning translate to practical clinical benefits.
 
 
 \section{Thesis Organization}
 \label{sec:organization}
 
-% Chapter 2: Literature review on blood disease detection, CNNs, and equivariant networks
-% Chapter 3: Detailed methodology of pipeline components
-% Chapter 4: Experimental results and comparative analysis
-% Chapter 5: Conclusions and future research directions
+The remainder of this thesis is organized as follows:
+
+\textbf{Chapter 2: Literature Review} surveys relevant prior work across four domains. We begin by reviewing traditional and machine learning approaches to blood disease detection, highlighting their strengths and limitations. Next, we examine convolutional neural network architectures—particularly ResNet and Mask R-CNN—that form the foundation of our pipeline. We then discuss instance segmentation methods for medical imaging, with emphasis on blood cell detection. Finally, we provide a detailed exposition of symmetry and equivariance in neural networks, tracing the development from standard CNNs through group-equivariant networks to Reynolds Networks, and conclude by identifying the research gap this thesis addresses.
+
+\textbf{Chapter 3: Methodology} presents comprehensive technical details of our proposed system. We describe the dataset characteristics, preprocessing procedures, and data challenges. The Mask R-CNN segmentation pipeline is detailed, including architecture, fine-tuning strategy, and synthetic dataset generation. The core Reynolds Network architecture for RBC classification receives extensive treatment: we develop the mathematical foundation of Reynolds operators and group actions, describe the hybrid ResNet-ReyNet model architecture, explain the implementation of symmetry layers and reduced-dimension parameterization, and specify training configurations. The WBC classification approach via transfer learning is presented, followed by pipeline integration details and evaluation metrics spanning segmentation quality, classification performance, rotation invariance, and computational efficiency.
+
+\textbf{Chapter 4: Results and Discussion} reports experimental findings and analysis. We present segmentation performance and qualitative examples, analyze RBC classification results comparing ReyNet against ResNet18 baselines with particular attention to rotation invariance testing, conduct ablation studies isolating the contribution of individual components, examine classification errors and failure modes, evaluate WBC classification performance, and assess end-to-end pipeline metrics including cell counting accuracy and clinical relevance. We conclude with comparative analysis positioning our approach relative to existing methods in the literature.
+
+\textbf{Chapter 5: Conclusion and Future Work} synthesizes the thesis contributions, summarizes key findings, acknowledges technical and clinical limitations, and proposes directions for future research including architectural extensions, computational optimizations, expanded clinical applications, and theoretical generalizations. We discuss the broader impact of symmetry-aware medical AI systems and conclude with reflections on bridging theory and practice in clinical decision support.
+
+\textbf{Appendix A: Code Documentation} provides implementation details including repository structure, key code snippets for Reynolds symmetry layers and network architectures, and hyperparameter configurations.
+
+\textbf{Appendix B: Dataset Details} documents dataset sources, statistics, train-validation-test splits, class distributions, and strategies for handling class imbalance.

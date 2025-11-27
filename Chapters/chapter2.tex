@@ -9,17 +9,20 @@
 \subsection{Traditional Methods}
 \label{subsec:traditional_methods}
 
-% - Manual microscopy: gold standard but labor-intensive
-% - Flow cytometry: expensive, requires specialized equipment
-% - Limitations: inter-observer variability, scalability issues
+For decades, diagnosing blood diseases has relied primarily on microscopic examination of stained blood smears. A trained hematologist examines the slide under a microscope, looking for characteristic features like abnormal cell shapes, parasitic inclusions, or changes in cell counts. This manual approach remains the clinical standard in most healthcare settings. While effective when performed by experienced specialists, manual microscopy has well-documented limitations that become especially problematic in resource-constrained environments.
 
+Flow cytometry offers an alternative for certain blood diseases, particularly leukemias and lymphomas. This technique passes cells through a laser beam one at a time, measuring physical and chemical characteristics to identify cell types and abnormalities. Flow cytometry can analyze thousands of cells quickly and provides quantitative measurements that complement microscopic findings. However, the equipment is expensive (often costing hundreds of thousands of dollars), requires specialized training to operate, and needs regular calibration and maintenance. These factors limit its availability primarily to well-funded hospitals and research centers.
+
+Both approaches share common practical challenges. Inter-observer variability is a persistent problem—different pathologists examining the same slide may reach different conclusions, particularly for borderline cases or rare diseases. The process doesn't scale well when dealing with large populations requiring screening, such as during malaria outbreaks. Additionally, the geographic distribution of expertise is uneven, with many regions lacking trained hematopathologists entirely. These limitations have motivated the search for automated diagnostic methods that can provide consistent, scalable analysis.
 
 \subsection{Machine Learning Approaches}
 \label{subsec:ml_approaches}
 
-% - Early methods: handcrafted features + SVM/Random Forest
-% - Deep learning revolution: CNNs for medical image analysis
-% - Challenges: limited labeled data, class imbalance
+Early attempts to automate blood cell analysis in the 1990s and 2000s used classical computer vision and machine learning techniques. Researchers would manually design features to extract from cell images—things like cell size, shape descriptors (circularity, eccentricity), color histograms, and texture measures (Haralick features, Local Binary Patterns). These handcrafted features would then feed into classifiers like Support Vector Machines (SVMs) or Random Forests. While these systems achieved moderate success on controlled datasets, their performance depended heavily on the quality of feature engineering, and they often struggled to generalize to images captured under different conditions or with different staining protocols.
+
+The rise of deep learning in the 2010s changed this landscape significantly. Convolutional neural networks demonstrated that they could automatically learn useful features directly from images, eliminating the need for manual feature design. Early successes in general computer vision (ImageNet challenges) quickly translated to medical imaging applications. For blood cell analysis specifically, researchers began applying CNNs to tasks like malaria detection, leukemia classification, and complete blood count automation. These deep learning approaches typically outperformed traditional methods, sometimes achieving accuracy comparable to expert hematologists.
+
+However, applying deep learning to blood cell analysis isn't without challenges. Medical imaging datasets are typically much smaller than those available for natural image tasks—a dataset with 10,000 labeled images might be considered large in medical imaging, whereas computer vision benchmarks often contain millions of examples. Class imbalance is common, with healthy cells vastly outnumbering diseased ones in typical datasets. Data collection faces strict privacy regulations, and annotation requires expensive expert time. These constraints mean that techniques like data augmentation and transfer learning have become essential tools in medical deep learning, though they don't fully solve the data scarcity problem.
 
 
 \section{Convolutional Neural Networks}
@@ -28,17 +31,24 @@
 \subsection{Standard Architectures}
 \label{subsec:standard_architectures}
 
-% - AlexNet, VGG, ResNet: pioneering architectures
-% - Skip connections (ResNet): address vanishing gradients
-% - Transfer learning: pre-trained models on ImageNet
+Convolutional neural networks process images through a series of learned filters that detect patterns at increasing levels of abstraction. Early layers typically learn to detect simple features like edges and colors, while deeper layers combine these into more complex patterns like textures and object parts. This hierarchical feature learning happens automatically during training, without requiring manual specification of what features to extract.
 
+AlexNet's victory in the 2012 ImageNet competition marked the beginning of deep learning's dominance in computer vision. The architecture used five convolutional layers followed by three fully connected layers, trained on GPUs to handle millions of parameters. While relatively shallow by today's standards, AlexNet demonstrated that deep networks could learn powerful representations when given enough data and computational resources.
+
+The VGG architecture took a simpler approach: stacking many small 3×3 convolutional filters rather than using larger filter sizes. VGG networks are conceptually straightforward—just deeper versions of the basic CNN recipe—which made them popular for transfer learning and easy to understand. However, the depth came at a cost: VGG models have many parameters (138 million for VGG-16) and are computationally expensive.
+
+ResNet introduced skip connections (also called residual connections) that let information flow directly from earlier layers to later ones. Instead of learning a direct mapping from input to output, each layer learns the residual difference. This architectural innovation solved the vanishing gradient problem that had prevented training very deep networks, enabling models with 50, 101, or even 152 layers. ResNet won the 2015 ImageNet competition and quickly became a foundation for many computer vision applications. The basic building block—a few convolutional layers with a skip connection around them—is now ubiquitous in deep learning architectures.
+
+Transfer learning has become standard practice when working with limited training data. Instead of training a network from scratch with randomly initialized weights, we start with a model pre-trained on a large dataset like ImageNet (1.2 million images, 1000 categories). The pre-trained model has already learned to detect edges, textures, and common visual patterns. We then adapt this model to our specific task by replacing the final classification layer and fine-tuning on our target dataset. This approach works well because early visual features (edges, colors, simple textures) tend to be useful across different image domains, even when the specific objects being recognized are quite different.
 
 \subsection{Medical Imaging Applications}
 \label{subsec:medical_imaging_applications}
 
-% - Skin lesion classification, retinal disease detection
-% - X-ray analysis, pathology image classification
-% - Success factors: large datasets, data augmentation
+CNNs have been applied successfully across many medical imaging domains. In dermatology, networks classify skin lesions from photographs, helping identify potentially cancerous growths. Ophthalmology has seen systems that detect diabetic retinopathy from retinal images, sometimes matching or exceeding specialist performance. Radiology applications include detecting pneumonia in chest X-rays, identifying fractures, and segmenting organs in CT scans. Pathology is using CNNs to analyze histopathology slides for cancer detection and grading.
+
+These successes share common patterns. They work best when relatively large datasets are available—thousands to tens of thousands of labeled images. Data augmentation (rotating, flipping, adjusting brightness/contrast) helps networks generalize better and artificially increases dataset size. Transfer learning from ImageNet-pretrained models proves valuable even though natural images look quite different from medical images. Careful attention to class imbalance is often necessary, as diseased cases may be much rarer than healthy ones in training data.
+
+However, medical imaging applications face unique challenges compared to natural image tasks. The cost of errors is high—misclassifying a cancerous lesion as benign has serious clinical consequences. Interpretability matters more than in most computer vision applications; clinicians want to understand why a system made a particular prediction. Regulatory approval requires extensive validation and documentation. Dataset biases (imaging equipment, patient demographics, disease prevalence) can cause models to perform poorly when deployed in different settings than where they were trained.
 
 
 \section{Segmentation Models}
@@ -47,17 +57,20 @@
 \subsection{Instance Segmentation}
 \label{subsec:instance_segmentation}
 
-% - Mask R-CNN: extension of Faster R-CNN with mask branch
-% - Architecture: backbone + RPN + RoI Align + mask head
-% - Applications: object detection + pixel-level segmentation
+While classification answers "what objects are in this image?", segmentation answers "where exactly are they?" Semantic segmentation labels every pixel with a class (e.g., marking all pixels belonging to "person" or "car"), but doesn't distinguish between different instances of the same class. Instance segmentation goes further: it identifies each individual object and provides a pixel-level mask for it. This distinction matters for tasks like counting—if an image contains five people, semantic segmentation tells you which pixels are "person," while instance segmentation identifies all five individuals separately.
 
+Mask R-CNN extends the Faster R-CNN object detection framework to perform instance segmentation. The architecture has several components working together. A backbone network (typically ResNet with Feature Pyramid Network) extracts features from the input image at multiple scales. The Region Proposal Network (RPN) suggests rectangular regions that might contain objects. For each proposal, RoI Align extracts features at the appropriate scale without the quantization artifacts of earlier pooling methods. Finally, three parallel heads predict: (1) the object class, (2) a refined bounding box, and (3) a binary segmentation mask for pixels inside the box.
+
+What makes Mask R-CNN effective is that the mask prediction branch operates in parallel with classification and bounding box regression, sharing features but maintaining its own specialized pathway. The mask is predicted at a higher resolution (typically 28×28) than earlier detection methods, preserving spatial detail. During training, the mask loss only applies to the predicted class for each instance, avoiding competition between classes. This design has proven successful across many domains—from autonomous driving to medical imaging—whenever we need to identify and precisely delineate multiple object instances.
 
 \subsection{Blood Cell Segmentation}
 \label{subsec:blood_cell_segmentation}
 
-% - Challenges: overlapping cells, staining variations
-% - Existing approaches: U-Net, FCN, Mask R-CNN variants
-% - Fine-tuning strategies for limited medical data
+Segmenting blood cells presents specific challenges. Cells often overlap in dense regions of the smear, making it hard to determine where one cell ends and another begins. Staining variations across different labs, protocols, or even different parts of the same slide can change cell appearance. The cells we care about (RBCs and WBCs) have quite different sizes—RBCs are typically 6-8 micrometers in diameter while WBCs can be 12-20 micrometers—requiring the segmentation model to handle this scale variation.
+
+Several deep learning approaches have been applied to blood cell segmentation. U-Net, originally developed for biomedical image segmentation, uses an encoder-decoder structure with skip connections that help preserve spatial detail. The architecture's symmetric design and relatively small parameter count make it work well even with limited training data. Fully Convolutional Networks (FCN) replace the fully connected layers of classification networks with convolutional layers, enabling dense pixel-wise predictions. More recent work has adapted Mask R-CNN to blood cell images, taking advantage of its ability to handle overlapping instances.
+
+When adapting these architectures to blood cell analysis with limited data, several strategies help. Transfer learning from models pre-trained on larger datasets (even COCO, despite being general object detection) provides better initial weights than random initialization. Fine-tuning typically freezes early layers and only updates deeper layers and task-specific heads. Data augmentation becomes especially important—random rotations, flips, brightness/contrast adjustments, and elastic deformations help the network generalize. Some researchers have used synthetic data generation, creating artificial cell images with known ground truth to supplement real data. Despite these techniques, segmentation performance still tends to degrade on cells that look different from the training distribution, highlighting the ongoing challenge of generalization in medical imaging.
 
 
 \section{Symmetry and Equivariance in Neural Networks}
@@ -66,9 +79,15 @@
 \subsection{Group Equivariant CNNs}
 \label{subsec:group_equivariant_cnns}
 
-% - Conventional CNNs: translation equivariant
-% - Need for rotation equivariance in medical imaging
-% - Group convolutions: G-CNNs (Cohen & Welling, 2016)
+Standard convolutional neural networks have built-in translation equivariance: if you shift an input image, the feature maps shift by the same amount. This property emerges naturally from the convolution operation's sliding window structure. Translation equivariance is useful—it means the network can detect a pattern regardless of where it appears in the image. However, standard CNNs don't have similar guarantees for other transformations like rotations or reflections.
+
+This matters for many vision tasks. An aerial image of a building should be classified the same way regardless of the camera angle. A medical cell image should yield identical predictions whether it's rotated or flipped. While data augmentation provides one solution (train on many rotated versions of each image), this approach has drawbacks: it increases training data size without adding new information, requires longer training, and doesn't guarantee perfect invariance to unseen rotation angles.
+
+Group-equivariant CNNs, introduced by Cohen and Welling in 2016, build rotation equivariance directly into the network architecture. The key insight is to generalize convolutions from translations to arbitrary group transformations. Instead of just sliding filters across space, group convolutions also rotate them. At each layer, instead of having one feature map per filter, you get multiple feature maps corresponding to different rotations of that filter. When you rotate the input image, the feature maps rotate in a corresponding way—hence equivariance.
+
+Mathematically, a function $f$ is equivariant to a group $G$ if $f(g \cdot x) = g \cdot f(x)$ for all group elements $g \in G$. For rotation equivariance with the cyclic group $C_4$ (90-degree rotations), if you rotate an input image by 90 degrees and pass it through the network, you get the same result as passing the original image through and rotating the output by 90 degrees. G-CNNs enforce this property by construction through specially designed group convolutions.
+
+While elegant in theory, G-CNNs face practical challenges. The number of feature maps increases with the group size—handling continuous rotations requires many orientation channels. The architectural constraints can be complex to implement. And G-CNNs still need to learn the right features; they just learn them in a rotationally equivariant way. These limitations motivated research into more flexible approaches for building symmetry into neural networks.
 
 
 \subsection{Reynolds Networks}
@@ -77,60 +96,75 @@
 \subsubsection{Reynolds Operator Theory}
 \label{subsubsec:reynolds_theory}
 
-% - Equivariant operator: τ_G(f)(x) = (1/|G|) Σ_{g∈G} g^{-1}·f(g·x)
-% - Invariant operator: γ_G(f)(x) = (1/|G|) Σ_{g∈G} f(g·x)
-% - Converts any function to equivariant/invariant form
+Reynolds Networks take a fundamentally different approach to building equivariance into neural architectures. Instead of designing specialized layers that are equivariant by construction (like group convolutions), Reynolds Networks apply the Reynolds operator—a mathematical tool from representation theory—to convert arbitrary neural networks into equivariant ones.
 
+The Reynolds operator works through averaging. Given a function $f$ and a group $G$, the Reynolds operator produces an equivariant version by averaging the function over all group transformations:
+
+\begin{equation}
+\tau_G(f)(x) = \frac{1}{|G|} \sum_{g \in G} g^{-1} \cdot f(g \cdot x)
+\end{equation}
+
+For blood cell images, suppose $f$ is a standard CNN and $G = D_4$ is the dihedral group (four rotations plus reflection). The Reynolds operator rotates the input image by each of the eight group elements, passes each through the network $f$, transforms the outputs back by the inverse rotation, and averages the results. The averaged output is guaranteed to be equivariant: if you rotate the input, the output rotates correspondingly.
+
+A related operator produces invariant functions (outputs that don't change under transformations):
+
+\begin{equation}
+\gamma_G(f)(x) = \frac{1}{|G|} \sum_{g \in G} f(g \cdot x)
+\end{equation}
+
+The key insight is that Reynolds operators can convert \emph{any} function into an equivariant or invariant one. You don't need to redesign your network architecture from scratch—you can take an existing network and wrap it with Reynolds averaging to gain the desired symmetry properties.
 
 \subsubsection{Key Innovations}
 \label{subsubsec:reynolds_innovations}
 
-% - Reynolds Design: subset H ⊂ G where averaging over H ≈ averaging over G
-% - Reduces computational complexity: O(n!) → O(n²) for graphs
-% - Reynolds Dimension: minimum input dimension needed for universality
-% - Reduces parameter redundancy
+While the basic Reynolds operator is conceptually simple, averaging over all group elements becomes computationally expensive for large groups. A graph with $n$ nodes has $n!$ possible permutations—averaging over all of them is intractable. The Reynolds Design addresses this by identifying a subset $H \subset G$ where averaging over $H$ approximates averaging over the full group $G$. For graph networks, this reduces complexity from $O(n!)$ to $O(n^2)$ while maintaining good approximation quality.
 
+The Reynolds Dimension concept addresses parameter efficiency. Traditional universal approximation results suggest neural networks need to process all input variables. Reynolds Networks theory shows you can often work with a reduced set of dimensions—the Reynolds dimension—that captures the essential equivariant structure. For certain symmetry groups and function classes, a network processing $d$ carefully chosen features can approximate any equivariant function, where $d$ is much smaller than the full input dimension. This dimensional reduction translates directly into fewer network parameters.
+
+In practice, implementing Reynolds Networks involves three mappings: First, $\phi_1$ extracts the Reynolds-dimension features from the full input. Second, a neural network $\psi$ processes these reduced features. Third, $\phi_2$ maps back to the output space. The complete Reynolds Network is $\phi_2 \circ \psi \circ \phi_1$, wrapped with Reynolds averaging. This factorization lets you work with smaller networks while still achieving universal approximation.
 
 \subsubsection{Theoretical Guarantees}
 \label{subsubsec:reynolds_guarantees}
 
-% - Theorem 12 (Universality): ReyNets are universal approximators
-% - Theorem 3 (Representation): Equivariant maps decompose via basis tableaux
-% - Reduces network complexity while maintaining expressiveness
+The Reynolds Networks paper establishes several theoretical results. Universal approximation theorems prove that Reynolds Networks can approximate any continuous equivariant function to arbitrary accuracy, given sufficient network capacity. This means you're not sacrificing representational power by imposing equivariance—the function class is still universal, just constrained to equivariant functions.
 
+Representation theorems characterize exactly which functions the Reynolds operator preserves or modifies. Equivariant functions remain unchanged (they're already in the target space), while non-equivariant functions get projected onto their nearest equivariant counterpart. This projection property means Reynolds averaging never increases approximation error—at worst, it stays the same if the function was already equivariant.
+
+The reduced complexity results show that parameter count can decrease significantly. For graph networks, where naively handling permutations would require an astronomical number of parameters, Reynolds Networks achieve equivariance with polynomially many parameters instead. This isn't just a theoretical curiosity—it translates to faster training, lower memory requirements, and better generalization on limited data.
 
 \subsubsection{Applications}
 \label{subsubsec:reynolds_applications}
 
-% - Graph neural networks, point clouds, molecular property prediction
-% - NOT yet applied to medical imaging or blood cell analysis
+Reynolds Networks have been successfully applied to domains where symmetry matters. Graph neural networks use them to handle permutation symmetries—the network's output shouldn't depend on how we order the nodes when representing a graph. Point cloud analysis applies Reynolds Networks to 3D data where the point ordering is arbitrary. Molecular property prediction uses them because molecular properties depend only on the atomic structure, not on how we orient the molecule in space.
+
+These applications share a common pattern: the underlying problem has clear mathematical symmetries (permutations for graphs, rotations for molecules), and Reynolds Networks provide a principled way to respect those symmetries. The theoretical guarantees mean we can be confident the networks are truly equivariant, not just approximately so through data augmentation. However, at the time of this work, Reynolds Networks haven't been applied to medical imaging tasks, and specifically not to microscopy images of blood cells.
 
 
 \subsection{Why ReyNet for Blood Cells?}
 \label{subsec:reynet_for_blood_cells}
 
-% - Blood cells exhibit rotational symmetry (no preferred orientation)
-% - Traditional approach: data augmentation (rotate/flip images)
-%   * Increases dataset size artificially
-%   * Longer training time
-%   * Network doesn't learn symmetry inherently
-% - ReyNet approach: build symmetry into architecture
-%   * Network learns rotation-invariant features natively
-%   * More parameter-efficient
-%   * Theoretically grounded in group theory
+Blood cells present an ideal case for applying symmetry-aware architectures. From a biological perspective, cells have no preferred orientation—they float freely in blood and land randomly on microscope slides. A red blood cell infected with malaria parasites shows the same diagnostic features whether photographed "right-side up" or rotated to any angle. Similarly, the shape and internal structure of white blood cells that indicate disease remain recognizable regardless of how the cell happens to be oriented when imaged.
+
+Despite this clear rotational symmetry, standard CNNs don't naturally respect it. If you train a ResNet predominantly on cells appearing in one orientation, it might perform poorly on the same cell types appearing at different angles. The typical solution is data augmentation: during training, randomly rotate and flip each image to show the network examples at all orientations. This helps, but has several drawbacks. It artificially inflates the dataset size without adding genuinely new information—a cell rotated 45 degrees contains the same diagnostic content as the original. Training takes longer because the network sees more images. Perhaps most importantly, even with augmentation, there's no guarantee of perfect rotation invariance. Networks often perform worse on rotation angles they haven't seen frequently during training.
+
+Reynolds Networks offer a more principled alternative. Instead of hoping the network learns rotation invariance from seeing enough rotated examples, we build that invariance directly into the architecture through Reynolds averaging. The mathematics guarantees that if we rotate the input, the output rotates correspondingly (equivariance), or stays unchanged (invariance), depending on which Reynolds operator we apply. This isn't approximate—it's exact by construction.
+
+For blood cells specifically, using the dihedral group $D_4$ (90-degree rotations plus reflection) makes sense practically. These transformations are easy to implement, cover the most common orientations cells appear in, and keep computational cost manageable (averaging over 8 group elements rather than continuous rotations). The theoretical parameter reduction that Reynolds Networks provide matters especially in medical imaging, where training data is limited and every saved parameter helps generalization.
+
+The connection to Group-equivariant CNNs is worth noting. Both G-CNNs and Reynolds Networks achieve equivariance, but through different mechanisms. G-CNNs bake equivariance into the convolution operation itself, creating feature maps for each rotation. Reynolds Networks take a simpler approach: wrap an existing network with averaging. This flexibility means we can use Reynolds Networks with standard architectures like ResNet, just adding symmetry layers where needed, rather than redesigning the entire network from scratch.
 
 
 \section{Research Gap}
 \label{sec:research_gap}
 
-% EXISTING WORK:
-% - Blood disease detection: mostly standard CNNs
-% - Reynolds Networks: applied to graphs/point clouds, NOT medical images
-% - Medical segmentation: well-established (Mask R-CNN)
-% - Equivariant networks: theoretical but limited medical applications
+The literature reviewed above reveals several established research areas that, while individually mature, haven't been fully integrated for blood disease detection. Examining each area shows what's well-developed and what remains to be addressed.
 
-% THIS THESIS:
-% - First to apply ReyNet to blood cell classification
-% - Combines segmentation + classification in unified pipeline
-% - Addresses localization, classification, AND counting
-% - Bridges gap between theoretical equivariance and practical medical AI
+\textbf{Blood Disease Detection Methods.} Significant work has applied CNNs to blood cell classification, typically achieving good accuracy on controlled datasets. However, most approaches focus exclusively on classification—determining whether a cell or image is healthy or diseased. Few systems address the complete diagnostic workflow: finding cells in raw smears (localization), classifying each individual cell, and counting infected cells to compute clinically relevant metrics like parasitemia. Systems that do perform segmentation often treat it separately from classification, training two models independently rather than leveraging segmentation to help the classifier.
+
+\textbf{Symmetry-Aware Architectures.} Reynolds Networks theory is well-developed, with strong mathematical foundations and proven success on graph neural networks, point clouds, and molecular property prediction. These applications exploit permutation symmetries or 3D rotational symmetries. However, the technique hasn't been applied to 2D medical images, despite the clear presence of rotational symmetry in many medical imaging contexts. The gap between the theoretical results (universal approximation, parameter reduction) and practical medical applications remains largely unexplored.
+
+\textbf{Integration Challenges.} Medical imaging research has established techniques for handling data scarcity (transfer learning, augmentation), performing segmentation (U-Net, Mask R-CNN variants), and building rotation-invariant classifiers (G-CNNs, data augmentation). However, these techniques are typically applied independently. Few works systematically combine them into a unified pipeline that leverages each component to address the others' weaknesses. For example, using segmentation to generate training data for classifiers, or applying symmetry-aware architectures specifically to reduce the data requirements that data scarcity creates.
+
+\textbf{This Thesis Addresses.} Several specific gaps emerge from this review. First, Reynolds Networks haven't been applied to blood cell images, despite blood cells being an ideal test case for rotational equivariance. Second, blood disease detection systems rarely provide both localization and classification in an integrated manner. Third, the data scarcity problem in medical imaging could potentially be addressed through segmentation-driven dataset generation, but this approach hasn't been thoroughly explored for blood cells. Fourth, empirical validation of whether Reynolds Networks' theoretical advantages (parameter reduction, guaranteed equivariance) translate to practical benefits in medical imaging is lacking.
+
+This work aims to fill these gaps by applying Reynolds Networks to blood cell classification, integrating segmentation and classification into a unified pipeline, and demonstrating how segmentation can help address data scarcity. The goal isn't to claim a breakthrough, but rather to explore whether theoretical advances in equivariant networks actually help with practical medical imaging challenges. The empirical question is straightforward: does building rotational symmetry into the architecture through Reynolds operators provide advantages over standard CNNs with data augmentation when classifying blood cells?

@@ -1,0 +1,136 @@
+\chapter{Literature Review}
+\label{chap:literature_review}
+
+% Chapter overview: Survey existing work in blood disease detection, convolutional neural networks, segmentation models, and symmetry-based neural networks. Identify the research gap this thesis addresses.
+
+\section{Blood Disease Detection}
+\label{sec:blood_disease_detection}
+
+\subsection{Traditional Methods}
+\label{subsec:traditional_methods}
+
+% - Manual microscopy: gold standard but labor-intensive
+% - Flow cytometry: expensive, requires specialized equipment
+% - Limitations: inter-observer variability, scalability issues
+
+
+\subsection{Machine Learning Approaches}
+\label{subsec:ml_approaches}
+
+% - Early methods: handcrafted features + SVM/Random Forest
+% - Deep learning revolution: CNNs for medical image analysis
+% - Challenges: limited labeled data, class imbalance
+
+
+\section{Convolutional Neural Networks}
+\label{sec:cnns}
+
+\subsection{Standard Architectures}
+\label{subsec:standard_architectures}
+
+% - AlexNet, VGG, ResNet: pioneering architectures
+% - Skip connections (ResNet): address vanishing gradients
+% - Transfer learning: pre-trained models on ImageNet
+
+
+\subsection{Medical Imaging Applications}
+\label{subsec:medical_imaging_applications}
+
+% - Skin lesion classification, retinal disease detection
+% - X-ray analysis, pathology image classification
+% - Success factors: large datasets, data augmentation
+
+
+\section{Segmentation Models}
+\label{sec:segmentation_models}
+
+\subsection{Instance Segmentation}
+\label{subsec:instance_segmentation}
+
+% - Mask R-CNN: extension of Faster R-CNN with mask branch
+% - Architecture: backbone + RPN + RoI Align + mask head
+% - Applications: object detection + pixel-level segmentation
+
+
+\subsection{Blood Cell Segmentation}
+\label{subsec:blood_cell_segmentation}
+
+% - Challenges: overlapping cells, staining variations
+% - Existing approaches: U-Net, FCN, Mask R-CNN variants
+% - Fine-tuning strategies for limited medical data
+
+
+\section{Symmetry and Equivariance in Neural Networks}
+\label{sec:symmetry_equivariance}
+
+\subsection{Group Equivariant CNNs}
+\label{subsec:group_equivariant_cnns}
+
+% - Conventional CNNs: translation equivariant
+% - Need for rotation equivariance in medical imaging
+% - Group convolutions: G-CNNs (Cohen & Welling, 2016)
+
+
+\subsection{Reynolds Networks}
+\label{subsec:reynolds_networks}
+
+\subsubsection{Reynolds Operator Theory}
+\label{subsubsec:reynolds_theory}
+
+% - Equivariant operator: τ_G(f)(x) = (1/|G|) Σ_{g∈G} g^{-1}·f(g·x)
+% - Invariant operator: γ_G(f)(x) = (1/|G|) Σ_{g∈G} f(g·x)
+% - Converts any function to equivariant/invariant form
+
+
+\subsubsection{Key Innovations}
+\label{subsubsec:reynolds_innovations}
+
+% - Reynolds Design: subset H ⊂ G where averaging over H ≈ averaging over G
+% - Reduces computational complexity: O(n!) → O(n²) for graphs
+% - Reynolds Dimension: minimum input dimension needed for universality
+% - Reduces parameter redundancy
+
+
+\subsubsection{Theoretical Guarantees}
+\label{subsubsec:reynolds_guarantees}
+
+% - Theorem 12 (Universality): ReyNets are universal approximators
+% - Theorem 3 (Representation): Equivariant maps decompose via basis tableaux
+% - Reduces network complexity while maintaining expressiveness
+
+
+\subsubsection{Applications}
+\label{subsubsec:reynolds_applications}
+
+% - Graph neural networks, point clouds, molecular property prediction
+% - NOT yet applied to medical imaging or blood cell analysis
+
+
+\subsection{Why ReyNet for Blood Cells?}
+\label{subsec:reynet_for_blood_cells}
+
+% - Blood cells exhibit rotational symmetry (no preferred orientation)
+% - Traditional approach: data augmentation (rotate/flip images)
+%   * Increases dataset size artificially
+%   * Longer training time
+%   * Network doesn't learn symmetry inherently
+% - ReyNet approach: build symmetry into architecture
+%   * Network learns rotation-invariant features natively
+%   * More parameter-efficient
+%   * Theoretically grounded in group theory
+
+
+\section{Research Gap}
+\label{sec:research_gap}
+
+% EXISTING WORK:
+% - Blood disease detection: mostly standard CNNs
+% - Reynolds Networks: applied to graphs/point clouds, NOT medical images
+% - Medical segmentation: well-established (Mask R-CNN)
+% - Equivariant networks: theoretical but limited medical applications
+
+% THIS THESIS:
+% - First to apply ReyNet to blood cell classification
+% - Combines segmentation + classification in unified pipeline
+% - Addresses localization, classification, AND counting
+% - Bridges gap between theoretical equivariance and practical medical AI

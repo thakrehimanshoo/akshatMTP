@@ -1,0 +1,108 @@
+\chapter{Code Documentation}
+\label{app:code_documentation}
+
+% Appendix overview: Document the code structure, key implementations, and hyperparameter configurations.
+
+\section{Repository Structure}
+\label{sec:repository_structure}
+
+% project/
+% ├── data/
+% │   ├── raw/                 # Raw blood smear images
+% │   ├── processed/           # Segmented single-cell images
+% │   └── labels.csv           # Ground truth labels
+% ├── models/
+% │   ├── segmentation/
+% │   │   └── mask_rcnn.py     # Mask R-CNN implementation
+% │   ├── classification/
+% │   │   ├── reynet.py        # ReyNet architecture
+% │   │   ├── resnet.py        # ResNet baseline
+% │   │   └── wbc_classifier.py
+% │   └── pipeline.py          # Integrated pipeline
+% ├── utils/
+% │   ├── preprocessing.py     # Image preprocessing
+% │   ├── augmentation.py      # Data augmentation
+% │   └── metrics.py           # Evaluation metrics
+% └── train.py                 # Training scripts
+
+
+\section{Key Code Snippets}
+\label{sec:key_code_snippets}
+
+\subsection{Reynolds Symmetry Layer}
+\label{subsec:code_reynolds_symmetry}
+
+% class ReynoldsSymmetryLayer(layers.Layer):
+%     """
+%     Applies group D_4 (4 rotations × 2 flips) to input tensor.
+%     Averages over all transformations for rotation invariance.
+%     """
+
+
+\subsection{ReyNet Convolution Block}
+\label{subsec:code_reynet_conv}
+
+% class ReyNetConv2D(layers.Layer):
+%     """
+%     Implements separated architecture:
+%     - Feature-wise MLP (pointwise convolution)
+%     - Set-wise MLP (Reynolds operator)
+%     """
+
+
+\subsection{Reynolds Operator (d-reduced)}
+\label{subsec:code_reynolds_operator}
+
+% class ReynoldsOperator(layers.Layer):
+%     """
+%     Implements Algorithm 3 from paper (d-reduced ReyNet).
+%     Three steps: mapping1 → neural network → mapping2
+%     """
+
+
+\subsection{Full ReyNet Architecture}
+\label{subsec:code_full_reynet}
+
+% def build_hybrid_resnet18(input_shape=(130, 130, 3), num_classes=2):
+%     """
+%     Hybrid ResNet-ReyNet architecture.
+%     """
+
+
+\subsection{Training Script}
+\label{subsec:code_training}
+
+% def train_reynet(train_data, val_data, config):
+%     """
+%     Training function for ReyNet model.
+%     """
+
+
+\subsection{Pipeline Integration}
+\label{subsec:code_pipeline}
+
+% def process_blood_smear(image_path, seg_model, rbc_model, wbc_model):
+%     """
+%     End-to-end pipeline for blood smear analysis.
+%     """
+
+
+\section{Hyperparameter Configuration}
+\label{sec:hyperparameters}
+
+% CONFIG = {
+%     # Segmentation (Mask R-CNN)
+%     'seg_learning_rate': 0.001,
+%     'seg_batch_size': 2,
+%     'seg_epochs': 50,
+%
+%     # RBC Classification (ReyNet)
+%     'rbc_learning_rate': 1e-4,
+%     'rbc_batch_size': 16,
+%     'rbc_epochs': 15,
+%
+%     # WBC Classification (ResNet18)
+%     'wbc_learning_rate': 1e-4,
+%     'wbc_batch_size': 32,
+%     'wbc_epochs': 20,
+% }

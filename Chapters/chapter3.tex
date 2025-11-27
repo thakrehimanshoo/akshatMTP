@@ -1,0 +1,323 @@
+\chapter{Methodology}
+\label{chap:methodology}
+
+% Chapter overview: Detail the proposed hybrid pipeline including dataset preparation, Mask R-CNN segmentation, Reynolds Network architecture, WBC classification, pipeline integration, and evaluation metrics.
+
+\section{Dataset and Preprocessing}
+\label{sec:dataset_preprocessing}
+
+\subsection{Dataset Description}
+\label{subsec:dataset_description}
+
+% - Source: [Specify your dataset source]
+% - Total images: [Number]
+% - Cell types: RBCs (healthy/infected), WBCs (types)
+% - Disease categories: [List diseases - malaria, anemia, etc.]
+
+
+\subsection{Data Challenges}
+\label{subsec:data_challenges}
+
+% - Raw blood smear images (not single-cell)
+% - Class imbalance (more healthy than infected)
+% - Staining variations across images
+% - Overlapping cells in dense regions
+
+
+\subsection{Preprocessing Pipeline}
+\label{subsec:preprocessing_pipeline}
+
+% 1. Image normalization: rescale to [0, 1]
+% 2. Stain normalization: [if applicable]
+% 3. Image resizing: 130×130 for ReyNet input
+% 4. No manual rotation augmentation (ReyNet handles this)
+
+
+\section{Segmentation Pipeline: Mask R-CNN}
+\label{sec:segmentation_maskrcnn}
+
+\subsection{Architecture Overview}
+\label{subsec:maskrcnn_architecture}
+
+% - Backbone: ResNet-50 with Feature Pyramid Network (FPN)
+% - Region Proposal Network (RPN): generates candidate regions
+% - RoI Align: extracts features for each proposal
+% - Mask Head: produces pixel-level segmentation masks
+
+
+\subsection{Fine-tuning Strategy}
+\label{subsec:maskrcnn_finetuning}
+
+% - Pre-trained weights: COCO dataset
+% - Transfer learning approach:
+%   * Freeze early layers (general features)
+%   * Fine-tune later layers + mask head
+% - Loss function: L_total = L_cls + L_box + L_mask
+
+
+\subsection{Training Configuration}
+\label{subsec:maskrcnn_training}
+
+% - Optimizer: SGD with momentum (0.9)
+% - Learning rate: 0.001 with step decay
+% - Batch size: [Specify]
+% - Epochs: [Specify]
+% - Data augmentation: horizontal/vertical flips, brightness adjustment
+
+
+\subsection{Output}
+\label{subsec:maskrcnn_output}
+
+% - Bounding boxes for each cell
+% - Binary masks (cell vs background)
+% - Confidence scores
+% - Generates synthetic single-cell dataset for classification
+
+
+\section{Reynolds Network for RBC Classification}
+\label{sec:reynet_rbc}
+
+\subsection{Reynolds Symmetry Theory}
+\label{subsec:reynolds_symmetry_theory}
+
+\subsubsection{Mathematical Foundation}
+\label{subsubsec:math_foundation}
+
+% A function f: ℝ^{N×N} → ℝ^{M} is:
+% - Equivariant if: f(g·x) = g·f(x) for all g ∈ G
+% - Invariant if: f(g·x) = f(x) for all g ∈ G
+%
+% Reynolds Operator (equivariant):
+% τ_G(f)(x) = (1/|G|) Σ_{g∈G} g^{-1}·f(g·x)
+%
+% For blood cell images:
+% - G = D_4 (dihedral group): 4 rotations × 2 flips = 8 transformations
+% - x = input cell image (130×130×3)
+% - f = pre-model (standard neural network)
+% - τ_G(f) = Reynolds model (equivariant by construction)
+
+
+\subsubsection{Reynolds Design}
+\label{subsubsec:reynolds_design}
+
+% Instead of averaging over all g ∈ G (expensive):
+% - Use subset H ⊂ G where τ_G(f) ≈ τ_H(f)
+% - For graphs: H has order n² instead of n!
+% - For images: carefully chosen cyclic subgroups
+
+
+\subsubsection{Reynolds Dimension}
+\label{subsubsec:reynolds_dimension}
+
+% Minimum input variables needed to represent invariant functions
+% - Full input: all pixel values
+% - Reduced input: d critical dimensions
+% - For our case: 4-reduced ReyNet (d=4)
+% - Theorem 17 guarantees universality with reduced dimensions
+
+
+\subsection{ReyNet Architecture}
+\label{subsec:reynet_architecture}
+
+\subsubsection{Hybrid ResNet-ReyNet Model}
+\label{subsubsec:hybrid_model}
+
+% Input: 130×130×3 RGB image of single RBC
+%
+% EARLY LAYERS (Standard ResNet):
+% - Initial Conv: 64 filters, 7×7, stride 2
+% - BatchNorm + ReLU + MaxPool
+% - ResNet Block 1-2: standard convolution blocks
+%
+% MID LAYERS (Standard ResNet):
+% - ResNet Block 3: conv_block(256, stride=2) × 2
+%
+% DEEP LAYERS (ReyNet with Reynolds Symmetry):
+% - Reynolds Symmetry Layer
+% - ReyNet Convolution Block
+% - Final Conv: 512 filters, 3×3
+%
+% OUTPUT HEAD:
+% - GlobalAveragePooling2D
+% - Dense(num_classes=2, activation='softmax')
+
+
+\subsubsection{Reynolds Symmetry Layer}
+\label{subsubsec:reynolds_symmetry_layer}
+
+% Applies rotations: 0°, 90°, 180°, 270°
+% Applies flip: vertical flip
+% Averages: (x + rot90 + rot180 + rot270 + flip_ud) / 5
+
+
+\subsubsection{ReyNet Convolution Block}
+\label{subsubsec:reynet_conv_block}
+
+% - Feature-wise MLP (pointwise convolution)
+% - Set-wise MLP (Reynolds operator on graph structure)
+% - Implements separated architecture from paper
+
+
+\subsection{Reynolds Design Implementation}
+\label{subsec:reynolds_implementation}
+
+\subsubsection{Mapping 1: Extract Invariant Features}
+\label{subsubsec:mapping1}
+
+% - Diagonal elements: x_ii (self-loops)
+% - Off-diagonal: x_ij, x_ji (edge connections)
+% - Transpose: X^T
+% - Stack: [X, X^T, row_diag, col_diag] → 4 dimensions
+
+
+\subsubsection{Neural Network N: Process d-reduced Input}
+\label{subsubsec:neural_network_n}
+
+% - Input: (Batch, N, N, Channels, 4)
+% - MLP with hidden units: [32]
+% - Output: (Batch, N, N, Channels)
+
+
+\subsubsection{Mapping 2: Restore Dimensions}
+\label{subsubsec:mapping2}
+
+% - Identity (features already in correct space)
+
+
+\subsubsection{Efficiency Gains}
+\label{subsubsec:efficiency_gains}
+
+% - Standard Reynolds operator: O(|G|) = O(8) for D_4 group
+% - With Reynolds design: O(n²) for graph interpretation
+% - With 4-reduced dimensions: 1/4 parameter reduction
+
+
+\subsection{Training Configuration}
+\label{subsec:reynet_training}
+
+% HYPERPARAMETERS:
+% - Optimizer: Adam
+% - Learning rate: 1e-4
+% - Batch size: 16
+% - Epochs: 15
+% - Early stopping: patience=3 on validation loss
+%
+% LOSS FUNCTION:
+% - Categorical cross-entropy
+% - Corner MSE loss for equivariant tasks
+%
+% DATA STRATEGY:
+% - Input: Single-cell images from Mask R-CNN
+% - No manual rotation augmentation
+% - Reynolds augmentation: generates symmetry variants internally
+
+
+\section{WBC Classification: ResNet18}
+\label{sec:wbc_classification}
+
+\subsection{Architecture}
+\label{subsec:wbc_architecture}
+
+% - Pre-trained ResNet18 on ImageNet
+% - Fine-tuning approach:
+%   * Freeze early layers (conv1 - layer2)
+%   * Unfreeze layer3, layer4, and FC layer
+% - Output: [Number of WBC classes]
+
+
+\subsection{Rationale}
+\label{subsec:wbc_rationale}
+
+% - WBC morphology is more complex than RBC
+% - Pre-trained features transfer well
+% - Smaller WBC dataset → transfer learning beneficial
+% - WBC orientation less critical than RBC (nucleus has structure)
+
+
+\subsection{Training Configuration}
+\label{subsec:wbc_training}
+
+% - Optimizer: Adam, lr=1e-4
+% - Batch size: 32
+% - Epochs: 20
+% - Data augmentation: rotation, flip, color jitter
+
+
+\section{Pipeline Integration}
+\label{sec:pipeline_integration}
+
+\subsection{End-to-End Workflow}
+\label{subsec:end_to_end_workflow}
+
+% INPUT: Raw blood smear microscopy image
+%
+% STEP 1: SEGMENTATION (Mask R-CNN)
+% → Detect all cells
+% → Generate bounding boxes and masks
+% → Extract individual cell images
+%
+% STEP 2: CLASSIFICATION
+% RBC path: → ReyNet classifier
+% WBC path: → ResNet18 classifier
+%
+% STEP 3: AGGREGATION
+% → Count total cells, infected cells
+% → Calculate infection rate
+% → Spatial localization
+%
+% OUTPUT:
+% - Disease diagnosis
+% - Cell count statistics
+% - Annotated image with bounding boxes and labels
+
+
+\subsection{Integration Challenges}
+\label{subsec:integration_challenges}
+
+% - Coordinate mapping: segmentation → classification → visualization
+% - Confidence thresholding: filter low-confidence detections
+% - Post-processing: non-maximum suppression for overlapping cells
+
+
+\section{Evaluation Metrics}
+\label{sec:evaluation_metrics}
+
+\subsection{Segmentation Metrics}
+\label{subsec:segmentation_metrics}
+
+% - Mean Average Precision (mAP) @ IoU thresholds
+% - Precision, Recall, F1-score for cell detection
+
+
+\subsection{Classification Metrics}
+\label{subsec:classification_metrics}
+
+% - Accuracy: correct predictions / total predictions
+% - Precision: TP / (TP + FP) per class
+% - Recall: TP / (TP + FN) per class
+% - F1-score: harmonic mean of precision and recall
+% - Confusion matrix
+
+
+\subsection{Rotation Invariance Testing}
+\label{subsec:rotation_invariance}
+
+% - Test set augmentation: rotate images at multiple angles
+% - Measure prediction consistency
+% - Compare ReyNet vs ResNet on rotated inputs
+
+
+\subsection{Computational Efficiency}
+\label{subsec:computational_efficiency}
+
+% - Inference time per image (ms)
+% - Parameters count
+% - FLOPs (floating point operations)
+
+
+\subsection{Pipeline Metrics}
+\label{subsec:pipeline_metrics}
+
+% - End-to-end accuracy
+% - Cell counting error: |predicted_count - ground_truth|
+% - Clinical metrics: sensitivity, specificity

@@ -1,0 +1,82 @@
+\chapter{Introduction}
+\label{chap:introduction}
+
+% Chapter overview: Introduce the problem of blood disease detection, motivate the need for automated systems, state the problem clearly, present our proposed solution, highlight novel contributions, and outline the thesis structure.
+
+\section{Motivation}
+\label{sec:motivation}
+
+% Blood diseases (malaria, anemia, leukemia) affect millions globally
+% Traditional diagnosis: manual microscopy - time-consuming, expertise-dependent
+% Need for automated, accurate, scalable diagnostic tools
+% AI/ML offers promise but faces challenges in medical imaging
+
+
+\section{Problem Statement}
+\label{sec:problem_statement}
+
+% CHALLENGE 1: Localization
+% - Raw blood smear images contain multiple cells
+% - Cannot identify WHICH cells are infected
+% - Cannot COUNT number of infected cells
+
+% CHALLENGE 2: Data Scarcity
+% - Most datasets: raw microscopy images (not single-cell labeled)
+% - Training classifiers requires single-cell annotated data
+% - Limited availability of properly segmented datasets
+
+% CHALLENGE 3: Orientation Invariance
+% - Blood cells have no inherent orientation
+% - Same cell at different rotations should yield same diagnosis
+% - Traditional CNNs require extensive data augmentation
+
+
+\section{Proposed Solution}
+\label{sec:proposed_solution}
+
+% A three-stage hybrid pipeline:
+
+\subsection{Stage 1: Segmentation}
+\label{subsec:stage_segmentation}
+
+% - Pre-trained Mask R-CNN fine-tuned for blood cell detection
+% - Isolates individual RBCs and WBCs from raw smears
+% - Generates synthetic single-cell labeled dataset
+
+
+\subsection{Stage 2: Classification}
+\label{subsec:stage_classification}
+
+% - RBC Classification: Reynolds Network (ReyNet) architecture
+%   * Exploits rotational/flip symmetry mathematically
+%   * Reduces parameter redundancy
+%   * Improves computational efficiency
+% - WBC Classification: Fine-tuned ResNet18
+%   * Leverages pre-trained features
+%   * Transfer learning for limited data
+
+
+\subsection{Stage 3: Disease Detection \& Counting}
+\label{subsec:stage_detection}
+
+% - Aggregates cell-level predictions
+% - Counts infected vs healthy cells
+% - Provides diagnostic report with spatial localization
+
+
+\section{Novel Contributions}
+\label{sec:contributions}
+
+% 1. First application of Reynolds Networks to blood cell classification
+% 2. Hybrid pipeline addressing localization, classification, and counting
+% 3. Synthetic dataset generation using segmentation for classifier training
+% 4. Comparative analysis: ReyNet vs traditional CNNs for medical imaging
+
+
+\section{Thesis Organization}
+\label{sec:organization}
+
+% Chapter 2: Literature review on blood disease detection, CNNs, and equivariant networks
+% Chapter 3: Detailed methodology of pipeline components
+% Chapter 4: Experimental results and comparative analysis
+% Chapter 5: Conclusions and future research directions

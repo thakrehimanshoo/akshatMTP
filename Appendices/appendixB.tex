@@ -1,0 +1,74 @@
+\chapter{Dataset Details}
+\label{app:dataset_details}
+
+% Appendix overview: Provide comprehensive information about datasets used, including sources, statistics, splits, and class distributions.
+
+\section{Dataset Sources}
+\label{sec:dataset_sources}
+
+% [Specify your dataset sources]
+% - Dataset name: [Name]
+% - Source: [URL or publication]
+% - License: [License type]
+% - Collection method: [Microscopy details]
+% - Staining protocol: [Giemsa, Wright, etc.]
+
+
+\section{Dataset Statistics}
+\label{sec:dataset_statistics}
+
+\subsection{Raw Blood Smear Images}
+\label{subsec:raw_images_stats}
+
+% - Total images: [Number]
+% - Image resolution: [Width × Height]
+% - File format: [PNG, JPEG, etc.]
+% - Annotation type: [Image-level, cell-level, etc.]
+
+
+\subsection{After Segmentation (Single-cell Dataset)}
+\label{subsec:segmented_stats}
+
+% - Total RBC images: [Number]
+%   * Healthy: [Number]
+%   * Infected: [Number]
+% - Total WBC images: [Number]
+%   * Lymphocyte: [Number]
+%   * Monocyte: [Number]
+%   * Neutrophil: [Number]
+%   * Eosinophil: [Number]
+%   * Basophil: [Number]
+
+
+\section{Data Split}
+\label{sec:data_split}
+
+% TRAIN SET: 70%
+% VALIDATION SET: 15%
+% TEST SET: 15%
+%
+% Stratified split to maintain class distribution across sets.
+
+
+\section{Class Imbalance}
+\label{sec:class_imbalance}
+
+% [TABLE: Class distribution]
+% Class       | Count  | Percentage
+% Healthy RBC |  X     |    Y%
+% Infected RBC|  Z     |    W%
+%
+% HANDLING STRATEGY:
+% - Class weights in loss function
+% - Oversampling minority class
+% - Focal loss for hard examples
+
+
+\section{Sample Images}
+\label{sec:sample_images}
+
+% [FIGURES: Representative samples from dataset]
+% - Healthy RBC examples
+% - Infected RBC examples (various stages)
+% - WBC subtypes examples
+% - Challenging cases (overlapping, staining variations)

@@ -1,0 +1,202 @@
+\chapter{Results and Discussion}
+\label{chap:results}
+
+% Chapter overview: Present experimental results for segmentation, RBC classification with ReyNet, WBC classification, and end-to-end pipeline evaluation. Include comparative analysis and error analysis.
+
+\section{Segmentation Results}
+\label{sec:segmentation_results}
+
+\subsection{Mask R-CNN Performance}
+\label{subsec:maskrcnn_performance}
+
+% [TABLE: Segmentation metrics]
+% - mAP@0.5: [Value]
+% - mAP@0.75: [Value]
+% - Precision: [Value]
+% - Recall: [Value]
+
+
+\subsection{Qualitative Analysis}
+\label{subsec:segmentation_qualitative}
+
+% [FIGURES: Segmentation examples]
+% - Successful cases: clean separation
+% - Failure cases: overlapping cells, staining artifacts
+
+
+\subsection{Synthetic Dataset Generation}
+\label{subsec:synthetic_dataset}
+
+% - Total single-cell images generated: [Number]
+% - RBC: [Number] (Healthy: X, Infected: Y)
+% - WBC: [Number] (Class distribution)
+
+
+\section{RBC Classification with ReyNet}
+\label{sec:rbc_classification_results}
+
+\subsection{Classification Accuracy}
+\label{subsec:rbc_accuracy}
+
+% [TABLE: ReyNet vs ResNet comparison]
+% Model          | Accuracy | Precision | Recall | F1-Score | Params
+% ResNet18       |   X%     |    X%     |   X%   |   X%     |  11.2M
+% ReyNet-4red    |   Y%     |    Y%     |   Y%   |   Y%     |   8.5M
+%
+% KEY FINDINGS:
+% - ReyNet achieves comparable/better accuracy with fewer parameters
+% - F1-score improvement suggests better balance
+
+
+\subsection{Rotation Invariance Testing}
+\label{subsec:rotation_invariance_results}
+
+\subsubsection{Experimental Setup}
+\label{subsubsec:rotation_experiment}
+
+% - Test images rotated at: 0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°
+% - Measure prediction consistency across rotations
+% - Metric: Percentage of images with consistent predictions
+
+
+\subsubsection{Quantitative Results}
+\label{subsubsec:rotation_quantitative}
+
+% [TABLE: Rotation invariance results]
+% Model          | Consistency @ All Angles | Avg. Confidence Drop
+% ResNet18       |         X%               |        Y%
+% ReyNet-4red    |         Z%               |        W%
+
+
+\subsubsection{Discussion}
+\label{subsubsec:rotation_discussion}
+
+% - ReyNet shows superior rotation invariance
+% - ResNet trained with augmentation still shows degradation
+% - Clinical significance: robust to slide orientation
+
+
+\subsection{Computational Efficiency}
+\label{subsec:rbc_efficiency}
+
+% [TABLE: Inference time and FLOPs]
+% Model          | Inference (ms) | FLOPs (G) | Memory (MB)
+% ResNet18       |      X         |     Y     |     Z
+% ReyNet-4red    |      A         |     B     |     C
+%
+% ANALYSIS:
+% - Parameter reduction: ~25% fewer parameters
+% - Trade-off: Reynolds operator adds overhead
+
+
+\subsection{Ablation Studies}
+\label{subsec:ablation_studies}
+
+% [TABLE: Component analysis]
+% Configuration                  | Accuracy
+% ResNet18 (baseline)            |   X%
+% ResNet18 + Reynolds Symmetry   |   Y%
+% ResNet18 + ReyNetConv          |   Z%
+% Full ReyNet-4red               |   W%
+
+
+\subsection{Error Analysis}
+\label{subsec:rbc_error_analysis}
+
+% [CONFUSION MATRIX]
+% Examine misclassifications:
+% - False positives: healthy cells classified as infected
+% - False negatives: infected cells missed
+%
+% [FIGURE: Example failure cases]
+% - Borderline infections (early-stage)
+% - Staining artifacts
+% - Partially segmented cells
+
+
+\section{WBC Classification Results}
+\label{sec:wbc_results}
+
+\subsection{Performance Metrics}
+\label{subsec:wbc_performance}
+
+% [TABLE: WBC classification]
+% - Accuracy: [Value]
+% - Per-class precision/recall
+
+
+\subsection{Comparison}
+\label{subsec:wbc_comparison}
+
+% - ResNet18 performs well due to pre-training
+% - WBC morphology benefits from ImageNet features
+
+
+\section{End-to-End Pipeline Evaluation}
+\label{sec:pipeline_evaluation}
+
+\subsection{Integrated System Performance}
+\label{subsec:integrated_performance}
+
+% [TABLE: Pipeline accuracy]
+% Stage           | Accuracy
+% Segmentation    |   X%
+% RBC Class.      |   Y%
+% WBC Class.      |   Z%
+% End-to-End      |   W%
+%
+% Error propagation analysis
+
+
+\subsection{Cell Counting Accuracy}
+\label{subsec:counting_accuracy}
+
+% [TABLE: Counting performance]
+% Image | Ground Truth | Predicted | Error
+%
+% Mean Absolute Error (MAE): [Value]
+% Root Mean Squared Error (RMSE): [Value]
+
+
+\subsection{Clinical Relevance}
+\label{subsec:clinical_relevance}
+
+% INFECTION RATE CALCULATION:
+% - Threshold for diagnosis: >5% infected cells
+% - Pipeline sensitivity: [Value]
+% - Pipeline specificity: [Value]
+%
+% [FIGURE: ROC curve for diagnostic threshold]
+
+
+\subsection{Qualitative Examples}
+\label{subsec:qualitative_examples}
+
+% [FIGURES: End-to-end results on full images]
+% - Input: Raw blood smear
+% - Segmentation: Detected cells with bounding boxes
+% - Classification: Color-coded labels
+% - Count overlay: Statistics displayed
+%
+% SUCCESS CASES & FAILURE CASES
+
+
+\section{Comparative Analysis with Existing Methods}
+\label{sec:comparative_analysis}
+
+% [TABLE: Comparison with literature]
+% Method              | Dataset  | Accuracy | Approach
+% [Paper 1]           | [Name]   |   X%     | Standard CNN
+% [Paper 2]           | [Name]   |   Y%     | Transfer learning
+% This work (ReyNet)  | [Name]   |   Z%     | ReyNet + Pipeline
+%
+% ADVANTAGES OF OUR APPROACH:
+% - Localization capability
+% - Counting functionality
+% - Rotation invariance
+% - Theoretically grounded
+%
+% LIMITATIONS:
+% - Computational overhead
+% - Two-stage training
+% - Dataset dependency

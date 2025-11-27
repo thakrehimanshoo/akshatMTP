@@ -1,0 +1,52 @@
+\documentclass[12pt]{report} 
+
+%load any additional packages
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage[normalem]{ulem}
+\usepackage{ragged2e}
+
+\setlength{\topmargin}{0.0in}
+\setlength{\oddsidemargin}{0.33in}
+\setlength{\evensidemargin}{-0.08in}
+\setlength{\textheight}{8.5in}
+\setlength{\textwidth}{6.0in}
+
+\def\mytitle{A Hybrid Segmentation–Classification Deep Learning Pipeline for Automated Blood Disease Detection}
+\def\myname{Akshat Chaudhary}
+\def\mydegree{Bachelor and Masters of Technology (Dual Degree)}
+\def\mysupervisor{Prof. Shailendra K. Varshney}
+\def\myrollno{21EC39003}
+\def\mydep{Department of Electronics and Electrical Communication Engineering}
+\def\mydegreedate{Date}
+
+\begin{document}
+ \baselineskip=18pt plus1pt
+ \setcounter{secnumdepth}{3}
+ \setcounter{tocdepth}{3}
+ \pagenumbering{roman}
+ 
+ %Front Matter
+ \include{./FrontMatter/titlePage}
+ \include{./FrontMatter/certificate}
+ %\include{./FrontMatter/dedication}
+ \include{./FrontMatter/acknowledgements}
+ \include{./FrontMatter/abstract}
+ \tableofcontents
+ \listoffigures
+ 
+ %Main material
+ \clearpage
+ \pagenumbering{arabic}
+ 
+ \include{./Chapters/chapter1}
+ 
+ %Bibliography
+ \addcontentsline{toc}{chapter}{Bibliography}
+ \bibliographystyle{agsm}
+ \bibliography{references}
+ 
+\end{document}
